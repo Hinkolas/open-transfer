@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  service:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: open-transfer-service
+    volumes:
+      - data:/app/data
+    networks:
+      - open-transfer-network
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: open-transfer-web
+    depends_on:
+      - service
+    networks:
+      - open-transfer-network
+    restart: unless-stopped
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  open-transfer-network:
+    driver: bridge
