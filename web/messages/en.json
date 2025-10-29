@@ -1,4 +1,23 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!"
+	"hello_world": "Hello, {name} from en!",
+	"upload_file_cta": "Drag and drop a file here or click to browse",
+	"upload_file_hint": "Hint: zip files before uploading",
+	"upload_email_label": "Email",
+	"upload_email_placeholder": "Your email address",
+	"upload_receiver_label": "Receiver",
+	"upload_receiver_placeholder": "Receiver's email address",
+	"upload_message_label": "Message",
+	"upload_message_placeholder": "Send a message",
+	"upload_password_label": "Password",
+	"upload_password_placeholder": "Set a password",
+	"upload_button_label": "Upload",
+	"upload_expiration_label": "Expires in",
+	"upload_expiration_option_never": "Never",
+	"upload_expiration_option_1d": "1 day",
+	"upload_expiration_option_3d": "3 days",
+	"upload_expiration_option_7d": "7 days",
+	"upload_expiration_option_30d": "30 days",
+	"upload_expiration_option_365d": "1 year",
+	"upload_options_label": "Options"
 }
