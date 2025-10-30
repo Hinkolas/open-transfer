@@ -3,12 +3,18 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 
-	let fileInput: HTMLInputElement;
-	let isDragging = false;
-	let selectedFile: File | null = null;
-	let uploading = false;
+	let email: string = $state('');
+	let receiver: string = $state('');
+	let message: string = $state('');
+	let expiresIn: string = $state('option-3d');
+
+	let fileInput: HTMLInputElement | null = $state(null);
+	let isDragging = $state(false);
+	let selectedFile: File | null = $state(null);
+	let uploading = $state(false);
 
 	function handleClick() {
+		if (!fileInput) return;
 		fileInput.click();
 	}
 
@@ -23,6 +29,7 @@
 	}
 
 	function handleDrop(e: DragEvent) {
+		if (!fileInput) return;
 		e.preventDefault();
 		isDragging = false;
 
@@ -53,6 +60,17 @@
 		} else {
 			return `${sizeInBytes} bytes`;
 		}
+	}
+
+	async function handleUpload() {
+		if (!selectedFile) return;
+		uploading = true;
+
+		console.log(`Uploading file: ${selectedFile.name} (${fileSize(selectedFile)})`);
+		console.log('Email:', email);
+		console.log('Receiver:', receiver);
+		console.log('Message:', message);
+		console.log('Expiration:', expiresIn);
 	}
 </script>
 
@@ -91,6 +109,7 @@
 		<div class="flex w-full flex-col">
 			<label class="text-sm" for="email">{m.upload_email_label()}</label>
 			<input
+				bind:value={email}
 				class="rounded border border-blue-100 px-2 py-1 text-base hover:border-blue-300 focus:border-blue-500"
 				type="email"
 				name="email"
@@ -101,6 +120,7 @@
 		<div class="flex w-full flex-col">
 			<label class="text-sm" for="receiver">{m.upload_receiver_label()}</label>
 			<input
+				bind:value={receiver}
 				class="rounded border border-blue-100 px-2 py-1 text-base hover:border-blue-300 focus:border-blue-500"
 				type="email"
 				name="receiver"
@@ -108,7 +128,7 @@
 			/>
 		</div>
 
-		<div class="flex w-full flex-col">
+		<!-- <div class="flex w-full flex-col">
 			<label class="text-sm" for="password">{m.upload_password_label()}</label>
 			<input
 				class="rounded border border-blue-100 px-2 py-1 text-base hover:border-blue-300 focus:border-blue-500"
@@ -116,12 +136,24 @@
 				name="password"
 				placeholder={m.upload_password_placeholder()}
 			/>
+		</div> -->
+
+		<div class="flex w-full flex-col">
+			<label class="text-sm" for="message">{m.upload_message_label()}</label>
+			<textarea
+				bind:value={message}
+				class="rounded border border-blue-100 px-2 py-1 text-base hover:border-blue-300 focus:border-blue-500"
+				name="message"
+				placeholder={m.upload_message_placeholder()}
+				rows="4"
+			></textarea>
 		</div>
 
 		<div class="flex w-full flex-row gap-4">
 			<div class="flex w-full flex-3 flex-col">
 				<label class="text-sm" for="expires_in">{m.upload_expiration_label()}</label>
 				<select
+					bind:value={expiresIn}
 					name="expires_in"
 					class="rounded border border-blue-100 px-2 py-1.5 text-base hover:border-blue-300 focus:border-blue-500"
 				>
@@ -145,8 +177,8 @@
 		</div>
 
 		<button
-			class="w-full rounded bg-blue-500 px-4 py-2 text-white"
-			type="submit"
+			class="w-full cursor-pointer rounded bg-blue-500 px-4 py-2 text-white"
+			type="button"
 			onclick={handleUpload}
 		>
 			{m.upload_button_label()}
