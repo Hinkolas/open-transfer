@@ -12,6 +12,18 @@
 	let isDragging = $state(false);
 	let selectedFile: File | null = $state(null);
 	let uploading = $state(false);
+	let uploadProgress = $state(0);
+	let uploadError = $state('');
+	let uploadSuccess = $state(false);
+	let uploadResponse = $state<{
+		download_url: string;
+		file_id: number;
+		file_size: number;
+		filename: string;
+		info_url: string;
+		message: string;
+		verify_url: string;
+	} | null>(null);
 
 	function handleClick() {
 		if (!fileInput) return;
@@ -65,18 +77,157 @@
 	async function handleUpload() {
 		if (!selectedFile) return;
 		uploading = true;
+		uploadProgress = 0;
+		uploadError = '';
+		uploadSuccess = false;
+		uploadResponse = null;
 
 		console.log(`Uploading file: ${selectedFile.name} (${fileSize(selectedFile)})`);
 		console.log('Email:', email);
 		console.log('Receiver:', receiver);
 		console.log('Message:', message);
 		console.log('Expiration:', expiresIn);
+
+		try {
+			const formData = new FormData();
+			formData.append('file', selectedFile);
+			formData.append('email', email);
+			formData.append('reciever', receiver);
+			if (message) formData.append('message', message);
+			if (expiresIn) formData.append('expiresIn', expiresIn);
+
+			// Use XMLHttpRequest for progress tracking
+			await new Promise((resolve, reject) => {
+				const xhr = new XMLHttpRequest();
+
+				xhr.upload.addEventListener('progress', (e) => {
+					if (e.lengthComputable) {
+						uploadProgress = Math.round((e.loaded / e.total) * 100);
+					}
+				});
+
+				xhr.addEventListener('load', () => {
+					if (xhr.status >= 200 && xhr.status < 300) {
+						try {
+							uploadResponse = JSON.parse(xhr.response);
+							resolve(uploadResponse);
+						} catch {
+							resolve(xhr.response);
+						}
+					} else {
+						reject(new Error(`Upload failed with status ${xhr.status}`));
+					}
+				});
+
+				xhr.addEventListener('error', () => {
+					reject(new Error('Upload failed'));
+				});
+
+				xhr.addEventListener('abort', () => {
+					reject(new Error('Upload aborted'));
+				});
+
+				xhr.open('POST', 'http://localhost:3000/upload');
+				xhr.send(formData);
+			});
+
+			console.log('Upload complete!', uploadResponse);
+			uploadProgress = 100;
+			uploadSuccess = true;
+		} catch (error) {
+			console.error('Upload error:', error);
+			uploadError = error instanceof Error ? error.message : 'Upload failed';
+			uploading = false;
+		}
+	}
+
+	function resetUpload() {
+		selectedFile = null;
+		if (fileInput) fileInput.value = '';
+		email = '';
+		receiver = '';
+		message = '';
+		uploadProgress = 0;
+		uploadError = '';
+		uploadSuccess = false;
+		uploadResponse = null;
+		uploading = false;
 	}
 </script>
 
-<form class="flex w-xl flex-col gap-4 rounded-2xl bg-white p-4">
-	{#if uploading}
-		<span>Uploading...</span>
+<div class="flex w-xl flex-col gap-4 rounded-2xl bg-white p-4">
+	{#if uploadSuccess && uploadResponse}
+		<div class="flex flex-col gap-4 p-4">
+			<div class="rounded-lg bg-green-50 p-6">
+				<div class="mb-4 flex items-center gap-2">
+					<svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"
+						></path>
+					</svg>
+					<p class="text-lg font-medium text-green-800">Upload Successful!</p>
+				</div>
+				<div class="space-y-2 text-sm text-green-700">
+					<p><strong>File:</strong> {uploadResponse.filename}</p>
+					<p><strong>Size:</strong> {fileSize({ size: uploadResponse.file_size } as File)}</p>
+					<p><strong>File ID:</strong> {uploadResponse.file_id}</p>
+				</div>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<a
+					href="http://localhost:3000{uploadResponse.download_url}"
+					target="_blank"
+					class="w-full cursor-pointer rounded bg-blue-500 px-4 py-2 text-center text-white hover:bg-blue-600"
+				>
+					Open Download Link
+				</a>
+				<button
+					class="w-full cursor-pointer rounded border border-blue-500 px-4 py-2 text-blue-500 hover:bg-blue-50"
+					onclick={() => {
+						navigator.clipboard.writeText(`http://localhost:3000${uploadResponse!.download_url}`);
+					}}
+				>
+					Copy Download Link
+				</button>
+				<button
+					class="w-full cursor-pointer rounded border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+					onclick={resetUpload}
+				>
+					Upload Another File
+				</button>
+			</div>
+		</div>
+	{:else if uploading}
+		<div class="flex flex-col gap-4 p-4">
+			<div class="flex flex-col gap-2">
+				<div class="flex items-center justify-between">
+					<span class="text-sm font-medium text-gray-700">Uploading {selectedFile?.name}...</span>
+					<span class="text-sm font-medium text-blue-600">{uploadProgress}%</span>
+				</div>
+				<div class="h-2 w-full overflow-hidden rounded-full bg-blue-100">
+					<div
+						class="h-full rounded-full bg-blue-500 transition-all duration-300"
+						style="width: {uploadProgress}%"
+					></div>
+				</div>
+				<span class="text-xs text-gray-500"
+					>{fileSize(selectedFile || new File([], ''))} uploaded</span
+				>
+			</div>
+		</div>
+	{:else if uploadError}
+		<div class="flex flex-col gap-4 p-4">
+			<div class="rounded-lg bg-red-50 p-4">
+				<p class="text-sm font-medium text-red-800">Upload Failed</p>
+				<p class="text-xs text-red-600">{uploadError}</p>
+			</div>
+			<button
+				class="w-full cursor-pointer rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+				onclick={resetUpload}
+			>
+				Try Again
+			</button>
+		</div>
 	{:else}
 		<div
 			role="button"
@@ -178,10 +329,10 @@
 
 		<button
 			class="w-full cursor-pointer rounded bg-blue-500 px-4 py-2 text-white"
-			type="button"
+			type="submit"
 			onclick={handleUpload}
 		>
 			{m.upload_button_label()}
 		</button>
 	{/if}
-</form>
+</div>
