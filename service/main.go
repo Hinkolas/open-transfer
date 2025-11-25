@@ -16,6 +16,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/cors"
 	"golang.org/x/crypto/bcrypt"
 	gomail "gopkg.in/mail.v2"
 )
@@ -174,8 +175,19 @@ func main() {
 	// Download file with token
 	router.HandleFunc("/upload/{id}/download", downloadFile).Methods("POST")
 
+	// Setup CORS to allow all origins
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+
+	// Wrap router with CORS middleware
+	handler := c.Handler(router)
+
 	fmt.Println("Starting server on port 3000")
-	if err := http.ListenAndServe(":3000", router); err != nil {
+	if err := http.ListenAndServe(":3000", handler); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
 }
