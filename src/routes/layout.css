@@ -1,0 +1,194 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-display: 'Bricolage Grotesque Variable', 'Public Sans Variable', ui-sans-serif, sans-serif;
+	--font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+	--color-paper: #f1f2ef;
+	--color-card: #fcfcfa;
+	--color-ink: #1c2733;
+	--color-ink-soft: #5c6672;
+	--color-line: #d7d9d1;
+	--color-wax: #c2362b;
+	--color-post: #2c5697;
+}
+
+body {
+	background-color: var(--color-paper);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-post);
+	outline-offset: 2px;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--color-post) 18%, transparent);
+}
+
+/* The one loud element: a par-avion hatch, used only as the page's top edge
+   and as the upload progress fill. */
+.airmail {
+	background: repeating-linear-gradient(
+		-45deg,
+		var(--color-wax) 0 10px,
+		var(--color-card) 10px 17px,
+		var(--color-post) 17px 27px,
+		var(--color-card) 27px 34px
+	);
+}
+
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--color-ink-soft);
+}
+
+.field-label {
+	display: block;
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--color-ink-soft);
+	margin-bottom: 0.375rem;
+}
+
+.field {
+	width: 100%;
+	border: 1px solid var(--color-line);
+	border-radius: 0.5rem;
+	background: transparent;
+	padding: 0.5rem 0.75rem;
+	font-size: 0.875rem;
+	color: var(--color-ink);
+	transition: border-color 120ms ease;
+}
+
+.field:hover {
+	border-color: color-mix(in srgb, var(--color-ink) 30%, var(--color-line));
+}
+
+.field:focus {
+	border-color: var(--color-ink);
+	outline: none;
+}
+
+.field::placeholder {
+	color: color-mix(in srgb, var(--color-ink-soft) 60%, transparent);
+}
+
+.btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border-radius: 0.5rem;
+	background: var(--color-ink);
+	color: var(--color-card);
+	font-weight: 500;
+	font-size: 0.9375rem;
+	padding: 0.75rem 1.25rem;
+	transition:
+		background-color 120ms ease,
+		transform 80ms ease;
+}
+
+.btn-primary:hover {
+	background: color-mix(in srgb, var(--color-ink) 88%, var(--color-post));
+}
+
+.btn-primary:active {
+	transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+	opacity: 0.45;
+	pointer-events: none;
+}
+
+.btn-secondary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid var(--color-line);
+	background: transparent;
+	color: var(--color-ink);
+	font-weight: 500;
+	font-size: 0.875rem;
+	padding: 0.625rem 1rem;
+	transition: border-color 120ms ease;
+}
+
+.btn-secondary:hover {
+	border-color: var(--color-ink);
+}
+
+.card {
+	background: var(--color-card);
+	border: 1px solid var(--color-line);
+	border-radius: 0.75rem;
+	box-shadow:
+		0 1px 2px rgb(28 39 51 / 0.04),
+		0 8px 24px -12px rgb(28 39 51 / 0.12);
+}
+
+@keyframes stamp-in {
+	from {
+		transform: scale(1.6) rotate(-2deg);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1) rotate(-8deg);
+		opacity: 1;
+	}
+}
+
+.stamp-in {
+	animation: stamp-in 420ms cubic-bezier(0.2, 1.4, 0.3, 1) both;
+}
+
+@keyframes rise-in {
+	from {
+		transform: translateY(12px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.rise-in {
+	animation: rise-in 300ms ease-out both;
+}
+
+@keyframes pulse-soft {
+	50% {
+		opacity: 0.55;
+	}
+}
+
+.pulse-soft {
+	animation: pulse-soft 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	::before,
+	::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}

@@ -1,0 +1,4 @@
+# transfer links are private — keep them out of search indexes
+User-agent: *
+Disallow: /t/
+Disallow: /api/
